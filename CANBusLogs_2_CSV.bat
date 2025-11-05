@@ -1,1 +1,2 @@
-python .\CANBusLogs_2_CSV_GUI.py
+@echo off
+pythonw .\CANBusLogs_2_CSV_GUI.py

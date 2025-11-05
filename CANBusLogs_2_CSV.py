@@ -201,7 +201,7 @@ class MultiFormatLogParser:
              r'\s+((?:[0-9A-Fa-f]{2}\s){0,8})$'),  # data bytes
 
             # CL2000
-            (r'([\d\._:]+);'                        # timestamp
+            (r'(\d{4}/\d{2}/\d{2}-\d{2}:\d{2}:\d{2}\.\d{3});'                        # timestamp
              r'(.+);'                               # message type
              r'([0-9A-Fa-f]+);'                     # CAN ID
              r'([0-9A-Fa-f]*)')                     # data bytes
@@ -313,8 +313,9 @@ class MultiFormatLogParser:
                     elif self.log_format == log_formats.CL2000.value:
                         tstr = match.group(1)
 
-                        tstr = datetime.strptime(tstr, TIME_STAMP_OUTPUT)[:-2]
-                        timestamp = tstr
+                        tstr = datetime.strptime(tstr, "%Y/%m/%d-%H:%M:%S.%f")
+                        timestamp = tstr.strftime(TIME_STAMP_OUTPUT)[:-3]
+                        #timestamp = tstr
                         direction = 'Rx'
 
                         extended = int(match.group(2))
@@ -328,6 +329,9 @@ class MultiFormatLogParser:
                         data_bytes = bytes.fromhex(data_str.replace(' ', ''))
                     else:
                         data_bytes = b''
+
+                    if extended:
+                        can_id = can_id | 0x80000000
 
                     # Verify that DLC matches data length
                     if len(data_bytes) != dlc:
@@ -414,6 +418,7 @@ def convert_log_to_csv(log_file: str, dbc_files: List[str], output_file: str):
     for msg in dbc_parser.messages:
         dbc_message = dbc_parser.messages[msg]
         tmp_str = str(dbc_message.can_id) + '|' + str(dbc_message.extended) + '|' + str(dbc_message.dlc)
+
         dbc_parser_messages_ID.append(tmp_str)
 
     # Parse log file

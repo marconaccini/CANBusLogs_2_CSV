@@ -11,16 +11,16 @@ class CANBusLogs2CSVGUI(tk.Tk):
         super().__init__()
         self.title("CANBusLogs_2_CSV GUI")
         self.geometry("600x450")
-        self.resizable(False, False)
+        self.resizable(False, True)
 
         # Variables
         self.log_file = tk.StringVar()
         self.dbc_files = []
         self.output_file = tk.StringVar(value="output.csv")
         self.delimiter = tk.StringVar(value=";")
-        self.name_mode = tk.StringVar(value="signal")
-        self.message_counter = tk.BooleanVar(value=False)
-        self.message_pulser = tk.BooleanVar(value=False)
+        self.name_mode = tk.StringVar(value="message.signal")
+        self.message_counter = tk.BooleanVar(value=True)
+        self.message_pulser = tk.BooleanVar(value=True)
 
         self.create_widgets()
 
