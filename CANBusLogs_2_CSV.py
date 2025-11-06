@@ -126,6 +126,9 @@ class DBCParser:
             if message_match:
                 can_id = int(message_match.group(1))
                 extended = int(can_id > 2047)
+                if can_id>= 0x80000000:
+                    can_id = can_id & 0x1FFFFFFF
+
                 name = message_match.group(2)
                 dlc = int(message_match.group(3))
                 current_message = DBCMessage(can_id=can_id, name=name, dlc=dlc, extended=extended, signals={}, counter = 0, pulse=False)
@@ -235,6 +238,9 @@ class MultiFormatLogParser:
                 if not line:
                     continue
 
+                if line_num == 3587:
+                    pass
+
                 # Detect log format and start date if not yet determined
                 if not self.start_date:
                     for form, start_date_format in enumerate(self.start_date_patterns):
@@ -330,8 +336,11 @@ class MultiFormatLogParser:
                     else:
                         data_bytes = b''
 
-                    if extended:
-                        can_id = can_id | 0x80000000
+
+                    #
+                    #if extended and (can_id <= 0x7ff) :
+                    #    can_id = (1 << 31) | can_id
+                    #
 
                     # Verify that DLC matches data length
                     if len(data_bytes) != dlc:
@@ -417,6 +426,7 @@ def convert_log_to_csv(log_file: str, dbc_files: List[str], output_file: str):
     dbc_parser_messages_ID = []
     for msg in dbc_parser.messages:
         dbc_message = dbc_parser.messages[msg]
+
         tmp_str = str(dbc_message.can_id) + '|' + str(dbc_message.extended) + '|' + str(dbc_message.dlc)
 
         dbc_parser_messages_ID.append(tmp_str)
@@ -473,6 +483,7 @@ def convert_log_to_csv(log_file: str, dbc_files: List[str], output_file: str):
                         if value is not None:
                             row[signal_index] = value
                     dbc_parser.messages[dbc_message].pulse = False
+
 
             # If CAN message has corresponding DBC definition
             can_message_ID = str(can_message.can_id) + '|' + str(can_message.extended) + '|' + str(can_message.dlc)
